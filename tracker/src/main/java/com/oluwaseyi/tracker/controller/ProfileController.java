@@ -14,37 +14,65 @@ import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
 import com.oluwaseyi.tracker.service.ProfileService;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class ProfileController {
+    private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
     private final ProfileService profileService;
 
 
-    @PostMapping("/profiles")
+    @PostMapping("/register")
     public ResponseEntity<ProfileDTO> createProfile(@RequestBody ProfileDTO profileDTO) {
-        ProfileDTO created = profileService.createProfile(profileDTO);
-        return ResponseEntity.ok(created);
+        logger.info("Received request to register profile: {}", profileDTO);
+        try {
+            ProfileDTO created = profileService.createProfile(profileDTO);
+            logger.info("Profile created: {}", created);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            logger.error("Error creating profile", e);
+            throw e;
+        }
     }
 
     @GetMapping("/profiles/{id}")
     public ResponseEntity<ProfileDTO> getProfileById(@PathVariable Long id) {
-        ProfileDTO profile = profileService.getProfileById(id);
-        return ResponseEntity.ok(profile);
+        logger.info("Fetching profile with id: {}", id);
+        try {
+            ProfileDTO profile = profileService.getProfileById(id);
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            logger.error("Error fetching profile with id: {}", id, e);
+            throw e;
+        }
     }
 
     @PutMapping("/profiles/{id}")
     public ResponseEntity<ProfileDTO> updateProfile(@PathVariable Long id, @RequestBody ProfileDTO profileDTO) {
-        ProfileDTO updated = profileService.updateProfile(id, profileDTO);
-        return ResponseEntity.ok(updated);
+        logger.info("Updating profile with id: {} with data: {}", id, profileDTO);
+        try {
+            ProfileDTO updated = profileService.updateProfile(id, profileDTO);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            logger.error("Error updating profile with id: {}", id, e);
+            throw e;
+        }
     }
 
     @DeleteMapping("/profiles/{id}")
     public ResponseEntity<Void> deleteProfile(@PathVariable Long id) {
-        profileService.deleteProfile(id);
-        return ResponseEntity.noContent().build();
+        logger.info("Deleting profile with id: {}", id);
+        try {
+            profileService.deleteProfile(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Error deleting profile with id: {}", id, e);
+            throw e;
+        }
     }
 
 }

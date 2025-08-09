@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProfileDTO {
 
-
+    private String name;
     private String email;
+    private String password;
     private String phoneNumber;
     private String profileImageUrl;
     private Boolean isActive;

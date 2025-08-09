@@ -34,6 +34,8 @@ public class ProfileEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
+    private String password;
+
     private String phoneNumber;
     private String profileImageUrl;
 

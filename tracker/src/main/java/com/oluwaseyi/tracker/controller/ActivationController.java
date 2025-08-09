@@ -15,10 +15,7 @@ public class ActivationController {
     @PostMapping
     public ResponseEntity<String> activate(@RequestParam String email, @RequestParam String code) {
         ProfileEntity profile = profileRepository.findByEmail(email)
-            .orElse(null);
-        if (profile == null) {
-            return ResponseEntity.badRequest().body("No profile found for email");
-        }
+            .orElseThrow(() -> new RuntimeException("No profile found for email"));
         if (profile.getActivationCode().equals(code)) {
             profile.setIsActive(true);
             profileRepository.save(profile);

@@ -43,20 +43,41 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     public ProfileDTO getProfileById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getProfileById'");
+        com.oluwaseyi.tracker.entity.ProfileEntity entity = profileRepository.findById(id)
+            .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException("Profile not found with id: " + id));
+        return ProfileDTO.builder()
+            .email(entity.getEmail())
+            .phoneNumber(entity.getPhoneNumber())
+            .profileImageUrl(entity.getProfileImageUrl())
+            .isActive(entity.getIsActive())
+            .activationCode(entity.getActivationCode())
+            .build();
     }
 
     @Override
     public ProfileDTO updateProfile(Long id, ProfileDTO profileDTO) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateProfile'");
+        com.oluwaseyi.tracker.entity.ProfileEntity entity = profileRepository.findById(id)
+            .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException("Profile not found with id: " + id));
+        entity.setEmail(profileDTO.getEmail());
+        entity.setPhoneNumber(profileDTO.getPhoneNumber());
+        entity.setProfileImageUrl(profileDTO.getProfileImageUrl());
+        entity.setIsActive(profileDTO.getIsActive());
+        entity.setActivationCode(profileDTO.getActivationCode());
+        com.oluwaseyi.tracker.entity.ProfileEntity updated = profileRepository.save(entity);
+        return ProfileDTO.builder()
+            .email(updated.getEmail())
+            .phoneNumber(updated.getPhoneNumber())
+            .profileImageUrl(updated.getProfileImageUrl())
+            .isActive(updated.getIsActive())
+            .activationCode(updated.getActivationCode())
+            .build();
     }
 
     @Override
     public void deleteProfile(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteProfile'");
+        com.oluwaseyi.tracker.entity.ProfileEntity entity = profileRepository.findById(id)
+            .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException("Profile not found with id: " + id));
+        profileRepository.delete(entity);
     }
 
 }

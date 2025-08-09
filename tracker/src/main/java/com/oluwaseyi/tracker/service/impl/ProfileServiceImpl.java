@@ -9,40 +9,44 @@ import com.oluwaseyi.tracker.repository.ProfileRepository;
 import com.oluwaseyi.tracker.service.ProfileService;
 
 import lombok.RequiredArgsConstructor;
+import com.oluwaseyi.tracker.service.EmailService;
 
 @RequiredArgsConstructor
 @Service
 public class ProfileServiceImpl implements ProfileService {
         private static final Logger logger = LoggerFactory.getLogger(ProfileServiceImpl.class);
 
-    private final ProfileRepository profileRepository;
+        private final ProfileRepository profileRepository;
+        private final EmailService emailService;
 
     @Override
         public ProfileDTO createProfile(ProfileDTO profileDTO) {
-                logger.info("Creating profile: {}", profileDTO);
-                // if (profileRepository.findByEmail(profileDTO.getEmail())) {
-                //         logger.warn("Email already in use: {}", profileDTO.getEmail());
-                //         throw new IllegalArgumentException("Email already in use");
-                // }
-                com.oluwaseyi.tracker.entity.ProfileEntity profileEntity = com.oluwaseyi.tracker.entity.ProfileEntity.builder()
-                                .email(profileDTO.getEmail())
-                                .name(profileDTO.getName())
-                                .phoneNumber(profileDTO.getPhoneNumber())
-                                .profileImageUrl(profileDTO.getProfileImageUrl())
-                                .password(profileDTO.getPassword())
-                                .isActive(profileDTO.getIsActive())
-                                .activationCode(java.util.UUID.randomUUID().toString())
-                                .build();
-                com.oluwaseyi.tracker.entity.ProfileEntity savedEntity = profileRepository.save(profileEntity);
-                logger.info("Profile saved: {}", savedEntity);
-                return ProfileDTO.builder()
-                                .email(savedEntity.getEmail())
-                                .phoneNumber(savedEntity.getPhoneNumber())
-                                .name(savedEntity.getName())
-                                .profileImageUrl(savedEntity.getProfileImageUrl())
-                                .isActive(savedEntity.getIsActive())
-                                .activationCode(savedEntity.getActivationCode())
-                                .build();
+        logger.info("Creating profile: {}", profileDTO);
+        if (profileRepository.existsByEmail(profileDTO.getEmail())) {
+            logger.warn("Email already in use: {}", profileDTO.getEmail());
+            throw new IllegalArgumentException("Email already in use");
+        }
+        String activationCode = java.util.UUID.randomUUID().toString();
+        com.oluwaseyi.tracker.entity.ProfileEntity profileEntity = com.oluwaseyi.tracker.entity.ProfileEntity.builder()
+                .email(profileDTO.getEmail())
+                .name(profileDTO.getName())
+                .phoneNumber(profileDTO.getPhoneNumber())
+                .profileImageUrl(profileDTO.getProfileImageUrl())
+                .password(profileDTO.getPassword())
+                .isActive(false)
+                .activationCode(activationCode)
+                .build();
+        com.oluwaseyi.tracker.entity.ProfileEntity savedEntity = profileRepository.save(profileEntity);
+        logger.info("Profile saved: {}", savedEntity);
+        emailService.sendActivationEmail(savedEntity.getEmail(), activationCode);
+        return ProfileDTO.builder()
+                .email(savedEntity.getEmail())
+                .phoneNumber(savedEntity.getPhoneNumber())
+                .name(savedEntity.getName())
+                .profileImageUrl(savedEntity.getProfileImageUrl())
+                .isActive(savedEntity.getIsActive())
+                .activationCode(savedEntity.getActivationCode())
+                .build();
     }
 
     @Override

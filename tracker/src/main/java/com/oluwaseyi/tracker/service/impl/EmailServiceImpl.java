@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
+// import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -27,7 +28,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendActivationEmail(String to, String activationCode) {
         logger.info("Sending activation email to {} with code: {}", to, activationCode);
         String subject = "Activate Profile";
-        String activationLink = "http://localhost:9090/api/activate?email=" + to + "&code=" + activationCode;
+        String activationLink = "http://localhost:9090/api/activate?activationCode=" + activationCode;
         String content = "<h2>Activate your profile</h2>"
                 + "<p>Click the link below to activate your profile:</p>"
                 + "<a href='" + activationLink + "'>Activate Profile</a>";

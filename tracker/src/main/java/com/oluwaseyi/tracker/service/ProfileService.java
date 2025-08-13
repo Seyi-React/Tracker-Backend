@@ -12,4 +12,7 @@ public interface ProfileService {
 
     void deleteProfile(Long id);
 
+
+    boolean activateProfile(String activationCode);
+
 }

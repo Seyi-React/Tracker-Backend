@@ -100,4 +100,16 @@ public class ProfileServiceImpl implements ProfileService {
                 logger.info("Profile deleted: {}", id);
     }
 
+    @Override
+    public boolean activateProfile(String activationCode) {
+        logger.info("Activating profile with activation code: {}", activationCode);
+        return profileRepository.findByActivationCode(activationCode)
+            .map(entity -> {
+                entity.setIsActive(true);
+                profileRepository.save(entity);
+                return true;
+            })
+            .orElse(false);
+    }
+
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
@@ -71,6 +72,22 @@ public class ProfileController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             logger.error("Error deleting profile with id: {}", id, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/activate")
+    public ResponseEntity<String> activateProfile(@RequestParam String activationCode) {
+        logger.info("Activating profile with code: {}", activationCode);
+        try {
+            boolean activated = profileService.activateProfile(activationCode);
+            if (activated) {
+                return ResponseEntity.ok("Profile activated successfully");
+            } else {
+                return ResponseEntity.badRequest().body("Invalid activation code");
+            }
+        } catch (Exception e) {
+            logger.error("Error activating profile with code: {}", activationCode, e);
             throw e;
         }
     }

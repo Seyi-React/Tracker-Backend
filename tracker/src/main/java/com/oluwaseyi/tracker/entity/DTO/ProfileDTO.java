@@ -18,5 +18,6 @@ public class ProfileDTO {
     private String profileImageUrl;
     private Boolean isActive;
     private String activationCode;
+    private String token;
 
 }

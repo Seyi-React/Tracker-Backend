@@ -1,3 +1,4 @@
+
 package com.oluwaseyi.tracker.service.impl;
 
 import org.springframework.stereotype.Service;
@@ -5,22 +6,59 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.oluwaseyi.tracker.entity.ProfileEntity;
+import com.oluwaseyi.tracker.entity.DTO.LoginRequestDTO;
 import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
 import com.oluwaseyi.tracker.repository.ProfileRepository;
+import com.oluwaseyi.tracker.security.JwtUtil;
 import com.oluwaseyi.tracker.service.ProfileService;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.oluwaseyi.tracker.service.EmailService;
 
 @RequiredArgsConstructor
 @Service
 public class ProfileServiceImpl implements ProfileService {
-        private static final Logger logger = LoggerFactory.getLogger(ProfileServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProfileServiceImpl.class);
 
-        private final ProfileRepository profileRepository;
-        private final PasswordEncoder passwordEncoder;
-        private final EmailService emailService;
+    private final ProfileRepository profileRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+
+    
+    @Override
+    public ResponseEntity<ProfileDTO> login(LoginRequestDTO loginRequest) {
+        logger.info("Login attempt for email: {}", loginRequest.getEmail());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            String token = jwtUtil.generateToken(loginRequest.getEmail());
+            ProfileEntity entity = profileRepository.findByEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException(
+                            "Profile not found with email: " + loginRequest.getEmail()));
+            ProfileDTO profileDTO = ProfileDTO.builder()
+                    .email(entity.getEmail())
+                    .phoneNumber(entity.getPhoneNumber())
+                    .name(entity.getName())
+                    .profileImageUrl(entity.getProfileImageUrl())
+                    .isActive(entity.getIsActive())
+                    .activationCode(entity.getActivationCode())
+                    .token(token)
+                    .build();
+            return ResponseEntity.ok(profileDTO);
+        } catch (AuthenticationException e) {
+            logger.error("Login failed for email: {}", loginRequest.getEmail(), e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @Override
         public ProfileDTO createProfile(ProfileDTO profileDTO) {

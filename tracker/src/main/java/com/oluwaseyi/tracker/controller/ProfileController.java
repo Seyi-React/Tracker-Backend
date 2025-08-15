@@ -14,12 +14,7 @@ import jakarta.validation.Valid;
 
 import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
 import com.oluwaseyi.tracker.service.ProfileService;
-import com.oluwaseyi.tracker.security.JwtUtil;
 import com.oluwaseyi.tracker.entity.DTO.LoginRequestDTO;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -32,20 +27,16 @@ public class ProfileController {
     private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
     private final ProfileService profileService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+ 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<ProfileDTO> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
         logger.info("Login attempt for email: {}", loginRequest.getEmail());
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-            String token = jwtUtil.generateToken(loginRequest.getEmail());
-            return ResponseEntity.ok(token);
-        } catch (AuthenticationException e) {
+            return profileService.login(loginRequest);
+        } catch (IllegalArgumentException e) {
             logger.error("Login failed for email: {}", loginRequest.getEmail(), e);
-            return ResponseEntity.status(401).body("Invalid credentials or inactive account");
+            return ResponseEntity.status(401).body(null);
         }
     }
 

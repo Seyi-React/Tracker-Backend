@@ -1,5 +1,10 @@
 package com.oluwaseyi.tracker.service;
 
+
+
+import org.springframework.http.ResponseEntity;
+
+import com.oluwaseyi.tracker.entity.DTO.LoginRequestDTO;
 import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
 
 public interface ProfileService {
@@ -12,6 +17,7 @@ public interface ProfileService {
 
     void deleteProfile(Long id);
 
+    ResponseEntity<ProfileDTO> login(LoginRequestDTO loginRequest);
 
     boolean activateProfile(String activationCode);
 

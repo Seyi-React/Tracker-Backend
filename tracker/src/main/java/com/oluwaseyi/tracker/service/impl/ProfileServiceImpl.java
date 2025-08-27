@@ -1,4 +1,3 @@
-
 package com.oluwaseyi.tracker.service.impl;
 
 import org.springframework.stereotype.Service;
@@ -9,11 +8,12 @@ import com.oluwaseyi.tracker.entity.ProfileEntity;
 import com.oluwaseyi.tracker.entity.DTO.LoginRequestDTO;
 import com.oluwaseyi.tracker.entity.DTO.ProfileDTO;
 import com.oluwaseyi.tracker.repository.ProfileRepository;
-import com.oluwaseyi.tracker.security.JwtUtil;
+import com.oluwaseyi.tracker.security.JwtService;
 import com.oluwaseyi.tracker.service.ProfileService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,34 +31,45 @@ public class ProfileServiceImpl implements ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
     
     @Override
-    public ResponseEntity<ProfileDTO> login(LoginRequestDTO loginRequest) {
-        logger.info("Login attempt for email: {}", loginRequest.getEmail());
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-            String token = jwtUtil.generateToken(loginRequest.getEmail());
-            ProfileEntity entity = profileRepository.findByEmail(loginRequest.getEmail())
-                    .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException(
-                            "Profile not found with email: " + loginRequest.getEmail()));
-            ProfileDTO profileDTO = ProfileDTO.builder()
-                    .email(entity.getEmail())
-                    .phoneNumber(entity.getPhoneNumber())
-                    .name(entity.getName())
-                    .profileImageUrl(entity.getProfileImageUrl())
-                    .isActive(entity.getIsActive())
-                    .activationCode(entity.getActivationCode())
-                    .token(token)
-                    .build();
-            return ResponseEntity.ok(profileDTO);
-        } catch (AuthenticationException e) {
-            logger.error("Login failed for email: {}", loginRequest.getEmail(), e);
-            return ResponseEntity.badRequest().build();
-        }
+   public ResponseEntity<ProfileDTO> login(LoginRequestDTO loginRequest) {
+    logger.info("Login attempt for email: {}", loginRequest.getEmail());
+    try {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        
+        // Use jwtService instead of jwtUtil for consistency
+        String token = jwtService.generateToken(loginRequest.getEmail());
+        
+        ProfileEntity entity = profileRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new com.oluwaseyi.tracker.exception.ResourceNotFoundException(
+                        "Profile not found with email: " + loginRequest.getEmail()));
+        
+        ProfileDTO profileDTO = ProfileDTO.builder()
+                .email(entity.getEmail())
+                .phoneNumber(entity.getPhoneNumber())
+                .name(entity.getName())
+                .profileImageUrl(entity.getProfileImageUrl())
+                .isActive(entity.getIsActive())
+                .activationCode(entity.getActivationCode())
+                .message("Login successful")
+                .token(token)
+                .build();
+        
+        return ResponseEntity.ok(profileDTO);
+    } catch (AuthenticationException e) {
+        logger.error("Login failed for email: {}", loginRequest.getEmail(), e);
+        ProfileDTO errorResponse = ProfileDTO.builder()
+                .message("Invalid credentials")
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+    
+}
 
     @Override
         public ProfileDTO createProfile(ProfileDTO profileDTO) {

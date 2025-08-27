@@ -30,13 +30,13 @@ public class ProfileController {
  
 
     @PostMapping("/login")
-    public ResponseEntity<ProfileDTO> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<ProfileDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         logger.info("Login attempt for email: {}", loginRequest.getEmail());
         try {
             return profileService.login(loginRequest);
         } catch (IllegalArgumentException e) {
             logger.error("Login failed for email: {}", loginRequest.getEmail(), e);
-            return ResponseEntity.status(401).body(null);
+            return ResponseEntity.badRequest().build();
         }
     }
 
